@@ -22,12 +22,28 @@ class ProdutoService
         return $this->produtos->search($filtros);
     }
 
+    public function update(Produto $produto, array $dados): Produto
+    {
+        // Usa o valor novo se veio na requisição, senão o que já está salvo
+        $preco = $dados['preco'] ?? $produto->preco;
+        $custo = $dados['preco_custo'] ?? $produto->preco_custo;
+
+        $this->verificarMargem((float) $preco, (float) $custo);
+
+        return $this->produtos->update($produto, $dados);
+    }
+
+    public function delete(Produto $produto): bool
+    {
+        return $this->produtos->delete($produto);
+    }
+
     private function verificarMargem(float $preco, float $custo)
     {
         $valor = $custo + (0.1 * $custo);
         $preco_minimo = round($valor, 2);
 
-        if($preco < $preco_minimo){
+        if ($preco < $preco_minimo) {
             throw ValidationException::withMessages([
                 'preco' => sprintf('O preço deve ser mais do que 10 por cento do valor de custo: %.2f', $preco_minimo),
             ]);
